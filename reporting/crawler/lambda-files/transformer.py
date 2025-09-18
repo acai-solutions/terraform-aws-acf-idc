@@ -16,8 +16,11 @@ import logging
 from typing import Dict
 from pull_data.identitystore_wrapper import IdentitystoreWrapper
 
+
 class Transformer:
-    def __init__(self, permission_sets: Dict, identitystore_wrapper: IdentitystoreWrapper):
+    def __init__(
+        self, permission_sets: Dict, identitystore_wrapper: IdentitystoreWrapper
+    ):
         self.permission_sets = permission_sets
         self.identitystore_wrapper = identitystore_wrapper
 
@@ -50,10 +53,18 @@ class Transformer:
                 group_ids = account.get("assignments", {}).get("groups", [])
 
                 # Add unique user_ids to referenced_user_ids
-                new_user_ids = [user_id for user_id in user_ids if user_id not in referenced_user_ids]
+                new_user_ids = [
+                    user_id
+                    for user_id in user_ids
+                    if user_id not in referenced_user_ids
+                ]
                 referenced_user_ids.extend(new_user_ids)
                 # Similarly, add unique group_ids to referenced_group_ids
-                new_group_ids = [group_id for group_id in group_ids if group_id not in referenced_group_ids]
+                new_group_ids = [
+                    group_id
+                    for group_id in group_ids
+                    if group_id not in referenced_group_ids
+                ]
                 referenced_group_ids.extend(new_group_ids)
 
                 # Initialize or update the account info in the transformed dict
@@ -65,18 +76,20 @@ class Transformer:
                             ps_info["permissionset_details"]["name"]: {
                                 "permission_set_arn": ps_arn,
                                 "users": user_ids,
-                                "groups":group_ids
-                            }                        
-                        }
+                                "groups": group_ids,
+                            }
+                        },
                     }
                 else:
                     # If the account is already in the transformed dict, just update with new permission set info
-                    transformed["accounts"][account_id]["permission_sets"][ps_info["permissionset_details"]["name"]] = {
+                    transformed["accounts"][account_id]["permission_sets"][
+                        ps_info["permissionset_details"]["name"]
+                    ] = {
                         "permission_set_arn": ps_arn,
                         "users": user_ids,
-                        "groups": group_ids
+                        "groups": group_ids,
                     }
-                    
+
         for group_id in referenced_group_ids:
             group_info = self.identitystore_wrapper.get_group_info(group_id)
             assigned_user_ids = group_info["assigned_users"]
@@ -85,8 +98,8 @@ class Transformer:
             # Ensure all users found as part of group memberships are also referenced
             for user_id in assigned_user_ids:
                 if user_id not in referenced_user_ids:
-                    referenced_user_ids.append(user_id)    
-                    
+                    referenced_user_ids.append(user_id)
+
         # Now, fetch and add user details for all referenced users
         for user_id in referenced_user_ids:
             if isinstance(user_id, str):
@@ -94,6 +107,8 @@ class Transformer:
                 # Populate the users within principals with display names
                 transformed["principals"]["users"][user_id] = user_info
             else:
-                logging.error(f"Expected string for user_id, got {type(user_id)}: {user_id}")
-            
+                logging.error(
+                    f"Expected string for user_id, got {type(user_id)}: {user_id}"
+                )
+
         return transformed
