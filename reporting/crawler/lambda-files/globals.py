@@ -57,7 +57,9 @@ def assume_remote_role(
                 )
         else:
             if sts_region_name is None:
-                sts_client = customer_session.client("sts", config=BOTO3_CONFIG_SETTINGS)
+                sts_client = customer_session.client(
+                    "sts", config=BOTO3_CONFIG_SETTINGS
+                )
             else:
                 sts_client = customer_session.client(
                     "sts", region_name=sts_region_name, config=BOTO3_CONFIG_SETTINGS

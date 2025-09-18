@@ -29,15 +29,22 @@ from transformer import Transformer
 def lambda_handler(event, context):
     try:
         # Minimal, safe startup logs
-        globals.LOGGER.debug(f"botocore={botocore.__version__} boto3={boto3.__version__}")
+        globals.LOGGER.debug(
+            f"botocore={botocore.__version__} boto3={boto3.__version__}"
+        )
         if isinstance(event, dict):
             globals.LOGGER.debug(f"Event keys: {list(event.keys())}")
 
         region = os.environ.get("AWS_REGION")
         crawler_arn = os.environ.get("CRAWLER_ARN")
         if not region or not crawler_arn:
-            globals.LOGGER.error("Missing required environment variables: AWS_REGION and/or CRAWLER_ARN")
-            return {"statusCode": 500, "body": json.dumps({"error": "Server misconfiguration"})}
+            globals.LOGGER.error(
+                "Missing required environment variables: AWS_REGION and/or CRAWLER_ARN"
+            )
+            return {
+                "statusCode": 500,
+                "body": json.dumps({"error": "Server misconfiguration"}),
+            }
 
         crawler_session = globals.assume_remote_role(
             remote_role_arn=crawler_arn, sts_region_name=region
@@ -55,7 +62,9 @@ def lambda_handler(event, context):
         try:
             users_count = len(identitystore_wrapper.cache.get("users", {}))
             groups_count = len(identitystore_wrapper.cache.get("groups", {}))
-            globals.LOGGER.debug(f"Identity cache sizes: users={users_count}, groups={groups_count}")
+            globals.LOGGER.debug(
+                f"Identity cache sizes: users={users_count}, groups={groups_count}"
+            )
         except Exception:
             globals.LOGGER.debug("Identity cache size check failed")
 
