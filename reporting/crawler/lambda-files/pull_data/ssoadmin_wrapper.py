@@ -13,7 +13,7 @@ For commercial licensing, contact: contact@acai.gmbh
 """
 
 import logging
-from typing import List, Dict, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
 
 import globals  # Ensure this contains BOTO3_CONFIG_SETTINGS
 from boto3.session import Session

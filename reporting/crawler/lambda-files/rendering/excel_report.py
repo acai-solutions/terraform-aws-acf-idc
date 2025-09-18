@@ -12,11 +12,12 @@ For commercial licensing, contact: contact@acai.gmbh
 
 """
 
+import datetime
 import os
 import tempfile
-import xlsxwriter
+
 import globals
-import datetime
+import xlsxwriter
 
 
 class ExcelReport:
