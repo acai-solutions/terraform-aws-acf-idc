@@ -25,8 +25,14 @@ for noisy_log_source in ["boto", "boto3", "botocore", "urllib3"]:
     logging.getLogger(noisy_log_source).setLevel(logging.WARN)
 LOGGER = logging.getLogger()
 
-REGION = os.environ["AWS_REGION"]
-REPORT_BUCKET_NAME = os.environ["REPORT_BUCKET_NAME"]
+# Resolve region safely at import time
+REGION = (
+    os.environ.get("AWS_REGION")
+    or os.environ.get("AWS_DEFAULT_REGION")
+    or boto3.Session().region_name
+    or "us-east-1"
+)
+REPORT_BUCKET_NAME = os.environ.get("REPORT_BUCKET_NAME")
 REPORT_BUCKET_FOLDER_NAME = "idc-reports"
 
 BOTO3_CONFIG_SETTINGS = boto3_config(
@@ -34,22 +40,28 @@ BOTO3_CONFIG_SETTINGS = boto3_config(
 )
 
 
-def assume_remote_role(remote_role_arn, sts_region_name=None, customer_session=None):
+def assume_remote_role(
+    remote_role_arn: str,
+    sts_region_name: Optional[str] = None,
+    customer_session: Optional[boto3.Session] = None,
+) -> boto3.Session:
     try:
         """Assumes the provided role in the auditing member account and returns a session"""
-
         # Beginning the assume role process for account
-        sts_client = None
-        if sts_region_name is None:
-            if customer_session is None:
-                sts_client = boto3.client("sts")
+        if customer_session is None:
+            if sts_region_name is None:
+                sts_client = boto3.client("sts", config=BOTO3_CONFIG_SETTINGS)
             else:
-                sts_client = customer_session.client("sts")
+                sts_client = boto3.client(
+                    "sts", region_name=sts_region_name, config=BOTO3_CONFIG_SETTINGS
+                )
         else:
-            if customer_session is None:
-                sts_client = boto3.client("sts", region_name=sts_region_name)
+            if sts_region_name is None:
+                sts_client = customer_session.client("sts", config=BOTO3_CONFIG_SETTINGS)
             else:
-                sts_client = customer_session.client("sts", region_name=sts_region_name)
+                sts_client = customer_session.client(
+                    "sts", region_name=sts_region_name, config=BOTO3_CONFIG_SETTINGS
+                )
 
         LOGGER.debug(f"Assuming role {remote_role_arn}")
         response = sts_client.assume_role(
@@ -61,6 +73,7 @@ def assume_remote_role(remote_role_arn, sts_region_name=None, customer_session=N
             aws_access_key_id=response["Credentials"]["AccessKeyId"],
             aws_secret_access_key=response["Credentials"]["SecretAccessKey"],
             aws_session_token=response["Credentials"]["SessionToken"],
+            region_name=REGION,
         )
         LOGGER.debug(f"Assumed role {remote_role_arn}")
         return session
@@ -76,7 +89,7 @@ def upload_to_s3(
     content: Optional[bytes] = None,
 ):
     if REPORT_BUCKET_NAME:
-        s3_client = boto3.client("s3")
+        s3_client = boto3.client("s3", region_name=REGION, config=BOTO3_CONFIG_SETTINGS)
         s3_bucket_name = REPORT_BUCKET_NAME
         s3_key = f"{REPORT_BUCKET_FOLDER_NAME}/{object_name}"
         s3_url = f"s3://{s3_bucket_name}/{s3_key}"
@@ -97,8 +110,8 @@ def upload_to_s3(
 
             LOGGER.info(f"Upload to S3 completed: {s3_url}")
             return s3_url
-        except Exception as e:
-            LOGGER.error(f"Failed to upload to S3: {e}")
+        except Exception:
+            LOGGER.exception("Failed to upload to S3")
             return None
     else:
         LOGGER.info("No output bucket provided.")

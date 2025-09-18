@@ -14,7 +14,6 @@ For commercial licensing, contact: contact@acai.gmbh
 
 import json
 import os
-from typing import Dict, List, Optional
 
 import boto3
 import botocore
@@ -26,19 +25,22 @@ from rendering.csv import CSV
 from rendering.excel_report import ExcelReport
 from transformer import Transformer
 
-REGION = os.environ["AWS_REGION"]
-CRAWLER_ARN = os.environ["CRAWLER_ARN"]
-
 
 def lambda_handler(event, context):
     try:
-        globals.LOGGER.debug(
-            f"botocore={botocore.__version__}  boto3={boto3.__version__}"
-        )
-        globals.LOGGER.debug(json.dumps(event))
+        # Minimal, safe startup logs
+        globals.LOGGER.debug(f"botocore={botocore.__version__} boto3={boto3.__version__}")
+        if isinstance(event, dict):
+            globals.LOGGER.debug(f"Event keys: {list(event.keys())}")
+
+        region = os.environ.get("AWS_REGION")
+        crawler_arn = os.environ.get("CRAWLER_ARN")
+        if not region or not crawler_arn:
+            globals.LOGGER.error("Missing required environment variables: AWS_REGION and/or CRAWLER_ARN")
+            return {"statusCode": 500, "body": json.dumps({"error": "Server misconfiguration"})}
 
         crawler_session = globals.assume_remote_role(
-            remote_role_arn=CRAWLER_ARN, sts_region_name=REGION
+            remote_role_arn=crawler_arn, sts_region_name=region
         )
 
         ssoadmin_wrapper = SsoAdminWrapper(crawler_session)
@@ -49,7 +51,13 @@ def lambda_handler(event, context):
         )
         identitystore_wrapper.fill_cache()
 
-        globals.LOGGER.info(json.dumps(identitystore_wrapper.cache))
+        # Avoid dumping full cache to logs; log only sizes at debug level
+        try:
+            users_count = len(identitystore_wrapper.cache.get("users", {}))
+            groups_count = len(identitystore_wrapper.cache.get("groups", {}))
+            globals.LOGGER.debug(f"Identity cache sizes: users={users_count}, groups={groups_count}")
+        except Exception:
+            globals.LOGGER.debug("Identity cache size check failed")
 
         transformer = Transformer(assignments, identitystore_wrapper)
         transformed = transformer.transform_assignments()
@@ -60,11 +68,11 @@ def lambda_handler(event, context):
         reporting_csv = CSV(transformed)
         reporting_csv.render()
 
-        return {"statusCode": 200, "body": transformed}
+        return {"statusCode": 200, "body": json.dumps(transformed)}
 
-    except ClientError as e:
-        globals.LOGGER.exception(f"Unexpected error")
-        raise e
-    except Exception as e:
-        globals.LOGGER.exception(f"Unexpected error")
-        raise e
+    except ClientError:
+        globals.LOGGER.exception("AWS client error")
+        raise
+    except Exception:
+        globals.LOGGER.exception("Unhandled error")
+        raise
