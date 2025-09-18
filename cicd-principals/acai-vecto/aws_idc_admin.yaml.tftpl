@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "IAM Role used to provision AWS Identity Center Resources"
+
+Resources:
+  IdCProvisioningRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: "$${target_principal_role_name}"
+      Path: "$${target_principal_role_path}"
+      Description: "IAM Role used to provision the AWS Identity Center Resources"
+$${resource_tags_block}
+      AssumeRolePolicyDocument:
+        #add trust policy here
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              "AWS":
+                - "$${trustee_role_arn}"
+            Action: sts:AssumeRole
+      Policies:
+      - PolicyName: "IdentityCenterPermissions"
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: ReadPermisssons
+              Effect: Allow
+              Action:
+                - sso:*Describe*
+                - sso:*Get*
+                - sso:*List*
+                - sso:*TagResource
+                - identitystore:*Get*
+                - identitystore:*Describe*
+                - identitystore:*List*
+              Resource: "*"
+            - Sid: PermissionSetProvisioning
+              Effect: Allow
+              Action:
+                - sso:*PermissionSet*
+              Resource: "*"
+            - Sid: AccountAssignment
+              Effect: Allow
+              Action:
+                - sso:*AccountAssignment*
+              Resource: "*"
+            - Sid: IAMListPermissions
+              Effect: Allow
+              Action:
+                - iam:List*
+              Resource: "*"
+            - Sid: GetSAMLProvider
+              Effect: Allow
+              Action:
+                - iam:GetSAMLProvider
+                - iam:CreateSAMLProvider
+                - iam:UpdateSAMLProvider
+              Resource: "arn:aws:iam::*:saml-provider/AWSSSO_*_DO_NOT_DELETE"
+            - Sid: AccessToSSOProvisionedRoles
+              Effect: Allow
+              Action:
+                - iam:AttachRolePolicy
+                - iam:CreateRole
+                - iam:DeleteRole
+                - iam:DeleteRolePolicy
+                - iam:GetRole
+                - iam:ListAttachedRolePolicies
+                - iam:ListRolePolicies
+                - iam:PutRolePolicy
+                - iam:UpdateRole
+                - iam:UpdateRoleDescription
+              Resource: "arn:aws:iam::*:role/aws-reserved/sso.amazonaws.com/*"
