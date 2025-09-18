@@ -12,11 +12,12 @@ For commercial licensing, contact: contact@acai.gmbh
 
 """
 
+import datetime
 import os
 import tempfile
-import xlsxwriter
+
 import globals
-import datetime
+import xlsxwriter
 
 
 class ExcelReport:
@@ -29,7 +30,7 @@ class ExcelReport:
         file_name = f"{timestamp}_assignments.xlsx"
         # local_file_path = f"/tmp/{file_name}"
         local_file_path = os.path.join(tempfile.gettempdir(), file_name)
-        
+
         # Create the Excel workbook and the first worksheet
         workbook = xlsxwriter.Workbook(local_file_path)
         worksheet_assignments = workbook.add_worksheet("Assignments")
