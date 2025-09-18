@@ -12,9 +12,9 @@ For commercial licensing, contact: contact@acai.gmbh
 
 """
 
-import datetime
 import os
 import tempfile
+from datetime import datetime
 
 import globals
 import xlsxwriter
