@@ -13,8 +13,9 @@ For commercial licensing, contact: contact@acai.gmbh
 """
 
 import logging
+from typing import Dict, List, Optional
+
 import boto3
-from typing import List, Dict, Optional
 import globals
 
 

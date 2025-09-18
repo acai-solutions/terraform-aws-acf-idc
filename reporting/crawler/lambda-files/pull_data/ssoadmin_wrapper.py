@@ -14,11 +14,10 @@ For commercial licensing, contact: contact@acai.gmbh
 
 import logging
 from datetime import datetime
-from typing import List, Dict, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
 
-from boto3.session import Session
 import globals  # Ensure this contains BOTO3_CONFIG_SETTINGS
-
+from boto3.session import Session
 from pull_data.account_wrapper import AccountWrapper
 
 

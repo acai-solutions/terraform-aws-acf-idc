@@ -12,11 +12,12 @@ For commercial licensing, contact: contact@acai.gmbh
 
 """
 
+import logging
 import os
+from typing import Optional
+
 import boto3
 from botocore.config import Config as boto3_config
-import logging
-from typing import Optional
 
 LOGLEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
 logging.getLogger().setLevel(LOGLEVEL)

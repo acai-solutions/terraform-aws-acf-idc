@@ -12,9 +12,10 @@ For commercial licensing, contact: contact@acai.gmbh
 
 """
 
+import csv
 from datetime import datetime
 from io import StringIO
-import csv
+
 import globals
 
 
