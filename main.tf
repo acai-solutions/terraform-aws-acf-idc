@@ -36,7 +36,7 @@ locals {
       "module_provider" = "ACAI GmbH",
       "module_name"     = "terraform-aws-acf-idc",
       "module_source"   = "github.com/acai-consulting/terraform-aws-acf-idc",
-      "module_version"  = /*inject_version_start*/ "1.2.2" /*inject_version_end*/
+      "module_version"  = /*inject_version_start*/ "1.3.0" /*inject_version_end*/
     }
   )
   identity_store_id  = tolist(data.aws_ssoadmin_instances.idc_instance.identity_store_ids)[0]
