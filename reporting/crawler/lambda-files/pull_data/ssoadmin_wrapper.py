@@ -13,7 +13,6 @@ For commercial licensing, contact: contact@acai.gmbh
 """
 
 import logging
-from datetime import datetime
 from typing import List, Dict, Tuple, Optional
 
 from boto3.session import Session

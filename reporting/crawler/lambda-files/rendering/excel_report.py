@@ -14,6 +14,7 @@ For commercial licensing, contact: contact@acai.gmbh
 
 from datetime import datetime
 import os
+import tempfile
 import xlsxwriter
 import globals
 
@@ -25,7 +26,8 @@ class ExcelReport:
         # Generate the timestamp for file naming
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"{timestamp}_assignments.xlsx"
-        local_file_path = f"/tmp/{file_name}"
+        # local_file_path = f"/tmp/{file_name}"
+        local_file_path = os.path.join(tempfile.gettempdir(), file_name)
         
         # Create the Excel workbook and the first worksheet
         workbook = xlsxwriter.Workbook(local_file_path)

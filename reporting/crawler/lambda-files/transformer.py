@@ -13,7 +13,7 @@ For commercial licensing, contact: contact@acai.gmbh
 """
 
 import logging
-from typing import List, Dict, Optional
+from typing import Dict
 from pull_data.identitystore_wrapper import IdentitystoreWrapper
 
 class Transformer:

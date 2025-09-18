@@ -18,7 +18,7 @@ import botocore
 import boto3
 from botocore.exceptions import ClientError
 import os
-from typing import List, Dict, Optional
+from typing import List
 import globals
 from pull_data.ssoadmin_wrapper import SsoAdminWrapper
 from pull_data.identitystore_wrapper import IdentitystoreWrapper

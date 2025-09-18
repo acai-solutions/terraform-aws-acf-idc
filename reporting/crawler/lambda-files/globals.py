@@ -67,9 +67,9 @@ def assume_remote_role(remote_role_arn, sts_region_name = None, customer_session
         LOGGER.debug(f"Assumed role {remote_role_arn}")
         return session
 
-    except Exception as e:
+    except Exception:
         LOGGER.exception(f"Was not able to assume role {remote_role_arn}")
-        return None
+        raise
 
 def upload_to_s3(object_name: str, local_file_path: Optional[str] = None, content: Optional[bytes] = None):
     if REPORT_BUCKET_NAME:
@@ -105,4 +105,4 @@ def upload_to_s3(object_name: str, local_file_path: Optional[str] = None, conten
             return None
     else:
         LOGGER.info("No output bucket provided.")
-        return None    
+        return None
