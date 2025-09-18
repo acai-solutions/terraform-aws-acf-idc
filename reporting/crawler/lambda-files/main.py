@@ -27,28 +27,29 @@ from rendering.csv import CSV
 from rendering.excel_report import ExcelReport
 
 
-REGION = os.environ['AWS_REGION']
-CRAWLER_ARN = os.environ['CRAWLER_ARN']
+REGION = os.environ["AWS_REGION"]
+CRAWLER_ARN = os.environ["CRAWLER_ARN"]
+
 
 def lambda_handler(event, context):
     try:
-        globals.LOGGER.debug(f"botocore={botocore.__version__}  boto3={boto3.__version__}")
+        globals.LOGGER.debug(
+            f"botocore={botocore.__version__}  boto3={boto3.__version__}"
+        )
         globals.LOGGER.debug(json.dumps(event))
 
         crawler_session = globals.assume_remote_role(
-            remote_role_arn = CRAWLER_ARN, 
-            sts_region_name = REGION
+            remote_role_arn=CRAWLER_ARN, sts_region_name=REGION
         )
 
         ssoadmin_wrapper = SsoAdminWrapper(crawler_session)
-        assignments= ssoadmin_wrapper.get_assignments()        
+        assignments = ssoadmin_wrapper.get_assignments()
 
         identitystore_wrapper = IdentitystoreWrapper(
-                crawler_session,
-                ssoadmin_wrapper.identitystore_id
-            )
+            crawler_session, ssoadmin_wrapper.identitystore_id
+        )
         identitystore_wrapper.fill_cache()
-        
+
         globals.LOGGER.info(json.dumps(identitystore_wrapper.cache))
 
         transformer = Transformer(assignments, identitystore_wrapper)
@@ -58,12 +59,9 @@ def lambda_handler(event, context):
         reporting.create_excel()
 
         reporting_csv = CSV(transformed)
-        reporting_csv.render()       
-        
-        return {
-            'statusCode': 200,
-            'body': transformed
-        }
+        reporting_csv.render()
+
+        return {"statusCode": 200, "body": transformed}
 
     except ClientError as e:
         globals.LOGGER.exception(f"Unexpected error")
