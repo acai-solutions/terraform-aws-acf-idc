@@ -14,12 +14,12 @@
 ![checkov-shield]
 
 <!-- BEGIN_ACAI_DOCS -->
-This [Terraform][terraform-url] automates the deployment of IAM Identity Center resources to enable Single Sign-On on AWS via an external Identity Provider (e.g. Azure Entra ID).
+This [Terraform][terraform-url] module automates the deployment of IAM Identity Center resources to enable Single Sign-On on AWS via an external Identity Provider (e.g. Azure Entra ID).
 
 This module is designed to:
 
 - Provision IdC Permission Sets which act as reusable templates for access policies.
-- Configure IdC Assignments that link these Permission Sets to AWS Accounts and specific users or groups.
+- Configure IdC Assignments that link these Permission Sets to AWS accounts and specific users or groups.
 - Facilitate centralized management of identities and permissions, reducing complexity and improving security governance.
 
 ![architecture]
@@ -28,7 +28,7 @@ This module is designed to:
 ### Requirements
 
 !!! note "Please ensure that the following requirements are met"
-- Enable AWS Organizations and add AWS Accounts.
+- Enable AWS Organizations and add AWS accounts.
 - Enable IAM Identity Center (successor to AWS Single Sign-On).
 - Create identities in IAM Identity Center (Users and Groups) or connect to an external identity provider - see [documentation](https://docs.aws.amazon.com/singlesignon/latest/userguide/manage-your-identity-source-idp.html).
 - Ensure that Terraform pipeline is using a role with permissions required for IAM Identity Center management.
@@ -36,7 +36,7 @@ This module is designed to:
 <!-- USAGE -->
 ## Usage
 
-The module can be configured by defining the IdC Permission Sets and the corresponding AWS Account Assignments.
+The module can be configured by defining the IdC Permission Sets and the corresponding AWS account Assignments.
 
 Define IdC Permission Sets:
 
@@ -152,6 +152,7 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [aws_ssm_parameter.module_version](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter) | resource |
 | [aws_ssoadmin_account_assignment.idc_groups](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssoadmin_account_assignment) | resource |
 | [aws_ssoadmin_account_assignment.idc_users](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssoadmin_account_assignment) | resource |
 | [aws_ssoadmin_customer_managed_policy_attachment.idc_ps_customer_managed](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssoadmin_customer_managed_policy_attachment) | resource |
@@ -202,7 +203,7 @@ See [LICENSE][license-url] for full details.
 [acai-shield]: https://img.shields.io/badge/maintained_by-acai.gmbh-CB224B?style=flat
 [acai-docs-shield]: https://img.shields.io/badge/documentation-docs.acai.gmbh-CB224B?style=flat
 [acai-url]: https://acai.gmbh
-[acai-docs-url]: https://docs.acai.gmbh
+[acai-docs-url]: https://docs.acai.gmbh/solution-acf/10_overview/
 [module-version-shield]: https://img.shields.io/badge/module_version-1.3.0-CB224B?style=flat
 [module-release-url]: https://github.com/acai-solutions/terraform-aws-acf-idc/releases
 [terraform-version-shield]: https://img.shields.io/badge/tf-%3E%3D1.3.10-blue.svg?style=flat&color=blueviolet

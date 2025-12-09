@@ -35,14 +35,25 @@ locals {
     {
       "module_provider" = "ACAI GmbH",
       "module_name"     = "terraform-aws-acf-idc",
-      "module_source"   = "github.com/acai-consulting/terraform-aws-acf-idc",
-      "module_version"  = /*inject_version_start*/ "1.3.0" /*inject_version_end*/
+      "module_source"   = "github.com/acai-solutions/terraform-aws-acf-idc",
     }
   )
   identity_store_id  = tolist(data.aws_ssoadmin_instances.idc_instance.identity_store_ids)[0]
   identity_store_arn = tolist(data.aws_ssoadmin_instances.idc_instance.arns)[0]
 }
 
+
+# ---------------------------------------------------------------------------------------------------------------------
+# ¦ MODULE VERSION
+# ---------------------------------------------------------------------------------------------------------------------
+resource "aws_ssm_parameter" "module_version" {
+  #checkov:skip=CKV2_AWS_34: AWS SSM Parameter should be Encrypted not required for module version
+  name           = "/acai/acf/idc/productversion"
+  type           = "String"
+  insecure_value = /*inject_version_start*/ "1.3.1" /*inject_version_end*/
+
+  tags = local.resource_tags
+}
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ¦ IDC PERMISSION SETS
