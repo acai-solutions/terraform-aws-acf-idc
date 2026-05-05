@@ -9,6 +9,10 @@
 # For commercial licensing, contact: contact@acai.gmbh
 
 
-output "aws_identity_center" {
-  value = jsondecode(aws_lambda_invocation.idc_report.result)
+provider "aws" {
+  region = var.aws_region
+  alias  = "org_mgmt"
+  assume_role {
+    role_arn = "arn:${var.aws_partition}:iam::${var.account_ids.org_mgmt}:role/${var.iam_role_name}"
+  }
 }

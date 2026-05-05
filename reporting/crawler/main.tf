@@ -43,6 +43,8 @@ locals {
 locals {
   zip_folder = "${path.module}/lambda-layer/20-zipped/"
 }
+
+data "aws_partition" "current" {}
 resource "aws_lambda_layer_version" "idc_libraries_layer" {
   layer_name               = "acf_idc_libraries_layer"
   filename                 = "${local.zip_folder}/idc_libraries_layer.zip"
@@ -112,7 +114,7 @@ data "aws_iam_policy_document" "lambda_policy" {
         "s3:PutObject",
       ]
       resources = [
-        format("arn:aws:s3:::%s/idc-reports/*", var.settings.security.reporting.bucket_name)
+        format("arn:%s:s3:::%s/idc-reports/*", data.aws_partition.current.partition, var.settings.security.reporting.bucket_name)
       ]
     }
   }
