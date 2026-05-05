@@ -12,10 +12,12 @@ For commercial licensing, contact: contact@acai.gmbh
 
 """
 
-import logging
 from typing import Dict
 
+import globals
 from pull_data.identitystore_wrapper import IdentitystoreWrapper
+
+LOGGER = globals.LOGGER
 
 
 class Transformer:
@@ -40,8 +42,8 @@ class Transformer:
         """
         # Initialize the structure for transformed data
         transformed = {"accounts": {}, "principals": {"users": {}, "groups": {}}}
-        referenced_user_ids = []
-        referenced_group_ids = []
+        referenced_user_ids: set = set()
+        referenced_group_ids: set = set()
 
         for ps_arn, ps_info in self.permission_sets.items():
             for account in ps_info.get("accounts", []):
@@ -53,20 +55,8 @@ class Transformer:
                 user_ids = account.get("assignments", {}).get("users", [])
                 group_ids = account.get("assignments", {}).get("groups", [])
 
-                # Add unique user_ids to referenced_user_ids
-                new_user_ids = [
-                    user_id
-                    for user_id in user_ids
-                    if user_id not in referenced_user_ids
-                ]
-                referenced_user_ids.extend(new_user_ids)
-                # Similarly, add unique group_ids to referenced_group_ids
-                new_group_ids = [
-                    group_id
-                    for group_id in group_ids
-                    if group_id not in referenced_group_ids
-                ]
-                referenced_group_ids.extend(new_group_ids)
+                referenced_user_ids.update(user_ids)
+                referenced_group_ids.update(group_ids)
 
                 # Initialize or update the account info in the transformed dict
                 if account_id not in transformed["accounts"]:
@@ -97,9 +87,7 @@ class Transformer:
             # Populate the groups within principals with display names and assigned users
             transformed["principals"]["groups"][group_id] = group_info
             # Ensure all users found as part of group memberships are also referenced
-            for user_id in assigned_user_ids:
-                if user_id not in referenced_user_ids:
-                    referenced_user_ids.append(user_id)
+            referenced_user_ids.update(assigned_user_ids)
 
         # Now, fetch and add user details for all referenced users
         for user_id in referenced_user_ids:
@@ -108,7 +96,7 @@ class Transformer:
                 # Populate the users within principals with display names
                 transformed["principals"]["users"][user_id] = user_info
             else:
-                logging.error(
+                LOGGER.error(
                     f"Expected string for user_id, got {type(user_id)}: {user_id}"
                 )
 

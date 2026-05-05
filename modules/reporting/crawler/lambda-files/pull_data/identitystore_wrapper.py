@@ -12,11 +12,12 @@ For commercial licensing, contact: contact@acai.gmbh
 
 """
 
-import logging
 from typing import Dict, List, Optional
 
 import boto3
 import globals
+
+LOGGER = globals.LOGGER
 
 
 class IdentitystoreWrapper:
@@ -36,7 +37,7 @@ class IdentitystoreWrapper:
 
     # ¦ fill_cache
     def fill_cache(self):
-        logging.info("Pre-populating users and groups cache.")
+        LOGGER.info("Pre-populating users and groups cache.")
         self._fill_user_cache()
         self._fill_group_cache()
 
@@ -45,7 +46,7 @@ class IdentitystoreWrapper:
     def get_user_info(self, user_id: str) -> Optional[Dict]:
         user_info = {"user_name": "n/a", "display_name": "n/a"}
         if not isinstance(user_id, str):
-            logging.error(
+            LOGGER.error(
                 f"Expected string for user_id, got {type(user_id)}: {user_id}"
             )
             return user_info
@@ -58,9 +59,9 @@ class IdentitystoreWrapper:
                 IdentityStoreId=self._identitystore_id, UserId=user_id
             )
             self.cache["users"][user_id] = self._extract_user_info(user_info_boto3)
-            return user_info
+            return self.cache["users"][user_id]
         except Exception as e:
-            logging.error(f"Error fetching user {user_id}: {e}")
+            LOGGER.error(f"Error fetching user {user_id}: {e}")
             return user_info
 
     def _extract_user_info(self, user_info: Dict) -> Dict:
@@ -71,14 +72,14 @@ class IdentitystoreWrapper:
 
     # ¦ _fill_user_cache
     def _fill_user_cache(self):
-        logging.info("Fetching all users.")
+        LOGGER.info("Fetching all users.")
         try:
             paginator = self._identitystore_client.get_paginator("list_users")
             for page in paginator.paginate(IdentityStoreId=self._identitystore_id):
                 for user in page["Users"]:
                     self.cache["users"][user["UserId"]] = self._extract_user_info(user)
         except Exception as e:
-            logging.error(f"Failed to fetch users: {e}")
+            LOGGER.error(f"Failed to fetch users: {e}")
 
     # endregion
 
@@ -87,7 +88,7 @@ class IdentitystoreWrapper:
     def get_group_info(self, group_id: str) -> Optional[Dict]:
         group_info = {"display_name": "n/a", "user_ids": [], "external_ids": []}
         if not isinstance(group_id, str):
-            logging.error(
+            LOGGER.error(
                 f"Expected string for group_id, got {type(group_id)}: {group_id}"
             )
             return group_info
@@ -111,19 +112,19 @@ class IdentitystoreWrapper:
             self.cache["groups"][group_id] = group_info
             return group_info
         except Exception as e:
-            logging.error(f"Error fetching group {group_id}: {e}")
+            LOGGER.error(f"Error fetching group {group_id}: {e}")
             return group_info
 
     # ¦ _fill_group_cache
     def _fill_group_cache(self):
-        logging.info("Fetching all groups.")
+        LOGGER.info("Fetching all groups.")
         try:
             paginator = self._identitystore_client.get_paginator("list_groups")
             for page in paginator.paginate(IdentityStoreId=self._identitystore_id):
                 for group in page["Groups"]:
                     self.get_group_info(group["GroupId"])
         except Exception as e:
-            logging.error(f"Failed to fetch groups: {e}")
+            LOGGER.error(f"Failed to fetch groups: {e}")
 
     # ¦ _list_group_memberships
     def _list_group_memberships(self, group_id: str) -> List[str]:
@@ -142,7 +143,7 @@ class IdentitystoreWrapper:
                         user_ids.append(user_id)
 
         except Exception as error:
-            logging.error(
+            LOGGER.error(
                 f"Error reading group members for {group_id} at {self._identitystore_id}: {error}"
             )
 

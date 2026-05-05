@@ -40,9 +40,10 @@ class CSV:
                 "permission_sets"
             ].items():
                 for group_id in permission_set_info["groups"]:
-                    for user_id in self.transformed["principals"]["groups"][group_id][
-                        "assigned_users"
-                    ]:
+                    group_details = self.transformed["principals"]["groups"].get(
+                        group_id, {}
+                    )
+                    for user_id in group_details.get("assigned_users", []):
                         csv_writer_assignments.writerow(
                             [
                                 account_id,
@@ -53,11 +54,25 @@ class CSV:
                             ]
                         )
 
+                # Direct user assignments (no group)
+                for user_id in permission_set_info.get("users", []):
+                    csv_writer_assignments.writerow(
+                        [
+                            account_id,
+                            account_info["account_name"],
+                            permission_set_name,
+                            "",
+                            user_id,
+                        ]
+                    )
+
         # Lookup files for Users
         user_object_name_lookup = f"{timestamp}_user_lookup.csv"
         user_lookup_content = StringIO()
         csv_writer_user_lookup = csv.writer(user_lookup_content)
-        csv_writer_user_lookup.writerow(["principal_id", "display_name", "user_name"])
+        csv_writer_user_lookup.writerow(
+            ["principal_id", "principal_type", "display_name", "user_name"]
+        )
         # Populate lookup CSV with users
         for user_id, user_details in self.transformed["principals"]["users"].items():
             csv_writer_user_lookup.writerow(

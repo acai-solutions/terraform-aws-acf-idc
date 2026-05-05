@@ -12,12 +12,13 @@ For commercial licensing, contact: contact@acai.gmbh
 
 """
 
-import logging
 from typing import Dict, List, Optional, Tuple
 
 import globals  # Ensure this contains BOTO3_CONFIG_SETTINGS
 from boto3.session import Session
 from pull_data.account_wrapper import AccountWrapper
+
+LOGGER = globals.LOGGER
 
 
 class SsoAdminWrapper:
@@ -41,7 +42,7 @@ class SsoAdminWrapper:
                 instances_response = self._sso_client.list_instances()
                 instance = instances_response.get("Instances", [{}])[0]
             except Exception as e:
-                logging.error(f"Failed to list SSO instances: {e}")
+                LOGGER.error(f"Failed to list SSO instances: {e}")
                 return (
                     "",
                     "",
@@ -74,7 +75,7 @@ class SsoAdminWrapper:
         self, permissionsets_in_scope: Optional[List[str]] = None
     ) -> Dict:
         """Loads all permission sets, optionally filtered by scope."""
-        logging.info("Retrieving all Permission Sets.")
+        LOGGER.info("Retrieving all Permission Sets.")
         permission_sets = {}
         try:
             paginator = self._sso_client.get_paginator("list_permission_sets")
@@ -95,7 +96,7 @@ class SsoAdminWrapper:
                             "accounts": accounts,
                         }
         except Exception as e:
-            logging.error(f"Error loading permission sets: {e}")
+            LOGGER.error(f"Error loading permission sets: {e}")
         return permission_sets
 
     # ¦ _describe_permission_set
@@ -108,7 +109,7 @@ class SsoAdminWrapper:
             details = response.get("PermissionSet", {})
             return self._format_permission_set(details)
         except Exception as e:
-            logging.error(f"Error describing permission set {permission_set_arn}: {e}")
+            LOGGER.error(f"Error describing permission set {permission_set_arn}: {e}")
             return {}
 
     # ¦ _format_permission_set
@@ -147,7 +148,7 @@ class SsoAdminWrapper:
                         )
             return accounts
         except Exception as e:
-            logging.error(
+            LOGGER.error(
                 f"Error describing accounts for permission set {permission_set_arn}: {e}"
             )
             return []
@@ -156,7 +157,7 @@ class SsoAdminWrapper:
     def _get_account_assignments_for_permissionset(
         self, permission_set_arn: str, account_id: str
     ) -> Dict[str, List[str]]:
-        logging.info(
+        LOGGER.info(
             f"Retrieving assignments for PermissionSet: {permission_set_arn} in Account: {account_id}"
         )
         assignments = {"users": [], "groups": []}

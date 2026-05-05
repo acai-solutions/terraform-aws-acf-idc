@@ -12,7 +12,6 @@ For commercial licensing, contact: contact@acai.gmbh
 
 """
 
-import logging
 from typing import Dict, List, Optional
 
 import boto3
@@ -28,14 +27,15 @@ class AccountWrapper:
         self._load_accounts()
 
     def _load_accounts(self):
-        logging.info(
+        globals.LOGGER.info(
             "Loading all active accounts with organizations:ListAccounts API call."
         )
 
         paginator = self._organizations_client.get_paginator("list_accounts")
         for page in paginator.paginate():
             for account in page.get("Accounts", []):
-                self._add_account(account)
+                if account.get("Status") == "ACTIVE":
+                    self._add_account(account)
 
     def _add_account(self, account_info: Dict):
         account_entry = {

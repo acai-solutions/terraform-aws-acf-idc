@@ -136,7 +136,13 @@ class ExcelReport:
 
         # Add the second worksheet for group and user summary
         worksheet_group_user = workbook.add_worksheet("Group-User Summary")
-        headers_summary = ["Group-Name", "User-Name", "Group-ID", "User-ID"]
+        headers_summary = [
+            "Group-Name",
+            "User-Name",
+            "User-Display-Name",
+            "Group-ID",
+            "User-ID",
+        ]
 
         for col_num, header in enumerate(headers_summary):
             worksheet_group_user.write(0, col_num, header, header_format)
