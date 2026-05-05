@@ -61,6 +61,7 @@ data "aws_iam_policy_document" "reporting" {
   #checkov:skip=CKV_AWS_111
   #checkov:skip=CKV_AWS_356
   #checkov:skip=CKV_AWS_109
+  #checkov:skip=CKV_AWS_110 : provisioner role legitimately requires broad IAM role-management actions to deploy the reporting Lambda execution role
   statement {
     sid    = "Lambda"
     effect = "Allow"
