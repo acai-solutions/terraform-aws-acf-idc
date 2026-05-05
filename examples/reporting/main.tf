@@ -74,7 +74,7 @@ provider "aws" {
 # ¦ AWS IAM IDENTITY CENTER REPORTING
 # ---------------------------------------------------------------------------------------------------------------------
 module "idc_crawler_role" {
-  source = "../../reporting/principal"
+  source = "../../modules/reporting/principal"
 
   settings = {
     security = {
@@ -94,7 +94,7 @@ module "idc_crawler_role" {
 }
 
 module "idc_report" {
-  source = "../../reporting/crawler"
+  source = "../../modules/reporting/crawler"
 
   settings = {
     security = {

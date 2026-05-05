@@ -40,24 +40,28 @@ locals {
 # ---------------------------------------------------------------------------------------------------------------------
 # ¦ LAMBDA LAYER
 # ---------------------------------------------------------------------------------------------------------------------
-locals {
-  zip_folder = "${path.module}/lambda-layer/20-zipped/"
-}
+module "idc_libraries_layer" {
+  source   = "../../../modules-external/acai-powertools/use-cases/terraform-aws-lambda-layer"
 
-data "aws_partition" "current" {}
-resource "aws_lambda_layer_version" "idc_libraries_layer" {
-  layer_name               = "acf_idc_libraries_layer"
-  filename                 = "${local.zip_folder}/idc_libraries_layer.zip"
-  compatible_runtimes      = [var.lambda_settings.runtime]
-  compatible_architectures = [var.lambda_settings.architecture]
-  source_code_hash         = filebase64sha256("${local.zip_folder}/idc_libraries_layer.zip")
-}
+  layer_settings = {
+    layer_name               = "${local.settings.crawler.lambda_name}-layer"
+    description              = "Lambda layer for IDC Reporting Crawler — includes AWS Lambda Powertools and XlsxWriter"
+    compatible_runtimes      = [var.lambda_settings.runtime]
+    compatible_architectures = [var.lambda_settings.architecture]
+    acai_modules             = ["aws_helpers", "logging"]
+    pip_requirements         = [
+      "aws-lambda-powertools==2.43.1",
+      "XlsxWriter==3.2.0" 
+    ]
+  }
 
+  resource_tags = var.resource_tags
+}
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ¦ LAMBDA
 # ---------------------------------------------------------------------------------------------------------------------
-module "icd_report" {
+module "idc_report" {
   #checkov:skip=CKV_TF_1
   source  = "acai-consulting/lambda/aws"
   version = "1.3.7"
@@ -66,7 +70,7 @@ module "icd_report" {
     function_name = local.settings.crawler.lambda_name
     description   = local.settings.crawler.lambda_description
     layer_arn_list = [
-      aws_lambda_layer_version.idc_libraries_layer.arn
+      module.idc_libraries_layer.layer_arn
     ]
     handler      = "main.lambda_handler"
     config       = var.lambda_settings

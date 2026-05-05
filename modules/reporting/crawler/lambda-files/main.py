@@ -35,20 +35,15 @@ def lambda_handler(event, context):
         if isinstance(event, dict):
             globals.LOGGER.debug(f"Event keys: {list(event.keys())}")
 
-        region = os.environ.get("AWS_REGION")
         crawler_arn = os.environ.get("CRAWLER_ARN")
-        if not region or not crawler_arn:
-            globals.LOGGER.error(
-                "Missing required environment variables: AWS_REGION and/or CRAWLER_ARN"
-            )
+        if not crawler_arn:
+            globals.LOGGER.error("Missing required environment variable: CRAWLER_ARN")
             return {
                 "statusCode": 500,
                 "body": json.dumps({"error": "Server misconfiguration"}),
             }
 
-        crawler_session = globals.assume_remote_role(
-            remote_role_arn=crawler_arn, sts_region_name=region
-        )
+        crawler_session = globals.assume_remote_role(remote_role_arn=crawler_arn)
 
         ssoadmin_wrapper = SsoAdminWrapper(crawler_session)
         assignments = ssoadmin_wrapper.get_assignments()
