@@ -618,7 +618,9 @@ def _decode_env_json(env_var: str, expected_type: type) -> object | None:
     return parsed if isinstance(parsed, expected_type) else None
 
 
-def _collect_fingerprint_inputs(args: argparse.Namespace) -> tuple[list[str] | None, list[str], dict[str, str]]:
+def _collect_fingerprint_inputs(
+    args: argparse.Namespace,
+) -> tuple[list[str] | None, list[str], dict[str, str]]:
     """Resolve the inputs that feed into `_inputs_fingerprint`.
 
     Returns (modules, requirements_specs, inline_files_map). Best-effort: a malformed
@@ -648,7 +650,11 @@ def _build_or_reuse(args: argparse.Namespace, fingerprint: str) -> None:
     lock_path = Path(str(args.output) + ".lock")
 
     with _build_lock(lock_path):
-        existing_fp = fingerprint_path.read_text(encoding="utf-8").strip() if fingerprint_path.exists() else ""
+        existing_fp = (
+            fingerprint_path.read_text(encoding="utf-8").strip()
+            if fingerprint_path.exists()
+            else ""
+        )
         if args.output.exists() and existing_fp == fingerprint and not args.no_zip:
             print(
                 f"Reusing existing layer zip ({args.output.name}); inputs unchanged "
@@ -673,7 +679,9 @@ def main() -> None:
     _validate_no_acai_args(args)
 
     try:
-        modules_for_fp, requirements_specs, inline_files_map = _collect_fingerprint_inputs(args)
+        modules_for_fp, requirements_specs, inline_files_map = (
+            _collect_fingerprint_inputs(args)
+        )
         fingerprint = _inputs_fingerprint(
             modules_for_fp,
             requirements_specs,
