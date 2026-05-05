@@ -18,7 +18,7 @@ from typing import Optional
 import boto3
 from acai.aws_helper.boto3_client import Boto3ClientFactory
 from acai.aws_helper.sts import StsClient
-from acai.logging import LoggerConfig, LoggerContext, LogLevel, create_lambda_logger
+from acai.logging import LoggerConfig, LogLevel, create_lambda_logger
 from botocore.config import Config as boto3_config
 
 LOGGER = create_lambda_logger(

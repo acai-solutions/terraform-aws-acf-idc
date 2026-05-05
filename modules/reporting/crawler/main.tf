@@ -41,7 +41,7 @@ locals {
 # ¦ LAMBDA LAYER
 # ---------------------------------------------------------------------------------------------------------------------
 module "idc_libraries_layer" {
-  source   = "../../../modules-external/acai-powertools/use-cases/terraform-aws-lambda-layer"
+  source = "../../../modules-external/acai-powertools/use-cases/terraform-aws-lambda-layer"
 
   layer_settings = {
     layer_name               = "${local.settings.crawler.lambda_name}-layer"
@@ -49,9 +49,9 @@ module "idc_libraries_layer" {
     compatible_runtimes      = [var.lambda_settings.runtime]
     compatible_architectures = [var.lambda_settings.architecture]
     acai_modules             = ["aws_helpers", "logging"]
-    pip_requirements         = [
+    pip_requirements = [
       "aws-lambda-powertools==2.43.1",
-      "XlsxWriter==3.2.0" 
+      "XlsxWriter==3.2.0"
     ]
   }
 
