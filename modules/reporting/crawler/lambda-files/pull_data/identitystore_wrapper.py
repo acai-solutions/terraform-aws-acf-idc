@@ -46,9 +46,7 @@ class IdentitystoreWrapper:
     def get_user_info(self, user_id: str) -> Optional[Dict]:
         user_info = {"user_name": "n/a", "display_name": "n/a"}
         if not isinstance(user_id, str):
-            LOGGER.error(
-                f"Expected string for user_id, got {type(user_id)}: {user_id}"
-            )
+            LOGGER.error(f"Expected string for user_id, got {type(user_id)}: {user_id}")
             return user_info
 
         if user_id in self.cache["users"]:
