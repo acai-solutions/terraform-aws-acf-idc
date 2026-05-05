@@ -28,6 +28,7 @@ terraform {
 # ¦ IDC INSTANCE
 # ---------------------------------------------------------------------------------------------------------------------
 data "aws_ssoadmin_instances" "idc_instance" {}
+data "aws_partition" "current" {}
 
 locals {
   resource_tags = merge(
@@ -92,7 +93,7 @@ resource "aws_ssoadmin_managed_policy_attachment" "idc_ps_aws_managed" {
   }
 
   instance_arn       = local.identity_store_arn
-  managed_policy_arn = "arn:aws:iam::aws:policy${each.value.policy_path}${each.value.policy_name}"
+  managed_policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy${each.value.policy_path}${each.value.policy_name}"
   permission_set_arn = aws_ssoadmin_permission_set.idc_ps[each.value.permission_set].arn
 }
 
