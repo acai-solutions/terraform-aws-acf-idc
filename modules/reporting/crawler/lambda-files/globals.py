@@ -23,7 +23,9 @@ from acai.aws_helper.sts import StsClient
 from acai.logging import LoggerConfig, LoggerContext, LogLevel, create_lambda_logger
 
 LOGGER = create_lambda_logger(
-    LoggerConfig(service_name="AWS Identity Center Reporting Crawler", log_level=LogLevel.INFO)
+    LoggerConfig(
+        service_name="AWS Identity Center Reporting Crawler", log_level=LogLevel.INFO
+    )
 )
 
 # Resolve region safely at import time
@@ -40,7 +42,9 @@ BOTO3_CONFIG_SETTINGS = boto3_config(
     region_name=REGION, retries=dict(max_attempts=10, mode="adaptive")
 )
 
-_CLIENT_FACTORY = Boto3ClientFactory(LOGGER, region=REGION, config=BOTO3_CONFIG_SETTINGS)
+_CLIENT_FACTORY = Boto3ClientFactory(
+    LOGGER, region=REGION, config=BOTO3_CONFIG_SETTINGS
+)
 _STS_CLIENT = StsClient(LOGGER)
 
 
@@ -51,7 +55,9 @@ def assume_remote_role(
 ) -> boto3.Session:
     """Assume *remote_role_arn* and return a boto3 Session pinned to ``REGION``."""
     sts_client = (
-        StsClient(LOGGER, base_session=customer_session) if customer_session else _STS_CLIENT
+        StsClient(LOGGER, base_session=customer_session)
+        if customer_session
+        else _STS_CLIENT
     )
     session = sts_client.assume_role(
         role_arn=remote_role_arn,
