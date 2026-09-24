@@ -219,6 +219,17 @@ resource "aws_ssoadmin_account_assignment" "idc_users" {
   target_id   = each.value.account_id
   target_type = "AWS_ACCOUNT"
 
+  # Assignments must be created after, and destroyed before, the permission set
+  # content. Every attachment change re-provisions the permission set to its
+  # assigned accounts; destroying both in parallel races and fails with a 404.
+  depends_on = [
+    aws_ssoadmin_managed_policy_attachment.idc_ps_aws_managed,
+    aws_ssoadmin_customer_managed_policy_attachment.idc_ps_customer_managed,
+    aws_ssoadmin_permission_set_inline_policy.idc_inline,
+    aws_ssoadmin_permissions_boundary_attachment.idc_boundary_aws_managed,
+    aws_ssoadmin_permissions_boundary_attachment.idc_boundary_customer_managed,
+  ]
+
   lifecycle {
     # Permission_set must exist in var.permission_sets
     precondition {
@@ -290,6 +301,17 @@ resource "aws_ssoadmin_account_assignment" "idc_groups" {
 
   target_id   = each.value.account_id
   target_type = "AWS_ACCOUNT"
+
+  # Assignments must be created after, and destroyed before, the permission set
+  # content. Every attachment change re-provisions the permission set to its
+  # assigned accounts; destroying both in parallel races and fails with a 404.
+  depends_on = [
+    aws_ssoadmin_managed_policy_attachment.idc_ps_aws_managed,
+    aws_ssoadmin_customer_managed_policy_attachment.idc_ps_customer_managed,
+    aws_ssoadmin_permission_set_inline_policy.idc_inline,
+    aws_ssoadmin_permissions_boundary_attachment.idc_boundary_aws_managed,
+    aws_ssoadmin_permissions_boundary_attachment.idc_boundary_customer_managed,
+  ]
 
   lifecycle {
     # Permission_set must exist in var.permission_sets
