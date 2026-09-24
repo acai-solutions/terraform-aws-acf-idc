@@ -126,4 +126,12 @@ data "aws_iam_policy_document" "reporting" {
     ]
     resources = ["arn:${data.aws_partition.current.partition}:ssm:*:*:parameter/acai/*"]
   }
+  statement {
+    # DescribeParameters does not support resource-level permissions; the AWS
+    # provider (>= 6.x) calls it when reading aws_ssm_parameter metadata.
+    sid       = "ModuleVersionParameterDescribe"
+    effect    = "Allow"
+    actions   = ["ssm:DescribeParameters"]
+    resources = ["*"]
+  }
 }
