@@ -43,8 +43,8 @@ module "acai_powertools_layer" {
   layer_settings = {
     layer_name               = "acai-powertools-basic"
     description              = "ACAI PowerTools with logging and boto3"
-    compatible_runtimes      = ["python3.12"]
-    compatible_architectures = ["arm64"]
+    compatible_runtimes      = ["python3.14"]
+    compatible_architectures = ["x86_64"]
     acai_modules             = ["logging", "aws_helper"]
   }
 }
@@ -59,8 +59,8 @@ module "acai_powertools_layer" {
   layer_settings = {
     layer_name               = "acai-powertools-ai"
     description              = "ACAI PowerTools with AI modules"
-    compatible_runtimes      = ["python3.12"]
-    compatible_architectures = ["x86_64", "arm64"]
+    compatible_runtimes      = ["python3.14"]
+    compatible_architectures = ["x86_64", "x86_64"]
     acai_modules             = ["ai_llm", "ai_embedding"]
     # Dependencies will be auto-resolved: logging and storage will be included
   }
@@ -80,8 +80,8 @@ module "acai_powertools_layer" {
   layer_settings = {
     layer_name               = "acai-powertools-full"
     description              = "ACAI PowerTools with extra pip packages"
-    compatible_runtimes      = ["python3.12"]
-    compatible_architectures = ["arm64"]
+    compatible_runtimes      = ["python3.14"]
+    compatible_architectures = ["x86_64"]
     acai_modules             = ["logging", "aws_helper"]
     pip_requirements = [
       "aws-lambda-powertools==2.43.1",
@@ -110,8 +110,8 @@ module "libraries_layer" {
   layer_settings = {
     layer_name               = "python-libraries"
     description              = "Third-party Python libraries"
-    compatible_runtimes      = ["python3.12"]
-    compatible_architectures = ["arm64"]
+    compatible_runtimes      = ["python3.14"]
+    compatible_architectures = ["x86_64"]
     acai_modules             = []
     pip_requirements = [
       "boto3>=1.34",
@@ -141,8 +141,8 @@ module "acai_powertools_layer" {
   layer_settings = {
     layer_name               = "acai-powertools-with-inline"
     description              = "ACAI logging + an inline-injected helper module"
-    compatible_runtimes      = ["python3.12"]
-    compatible_architectures = ["arm64"]
+    compatible_runtimes      = ["python3.14"]
+    compatible_architectures = ["x86_64"]
     acai_modules             = ["logging"]
     inline_files = {
       "acme/logging_factory.py" = <<-EOT
@@ -177,8 +177,8 @@ locals {
 
   layer_settings = {
     layer_name               = "acai-powertools-with-inline"
-    compatible_runtimes      = ["python3.12"]
-    compatible_architectures = ["arm64"]
+    compatible_runtimes      = ["python3.14"]
+    compatible_architectures = ["x86_64"]
     acai_modules             = ["logging"]
     inline_files             = local.inline_files
   }
@@ -210,8 +210,8 @@ resource "aws_lambda_function" "my_function" {
   function_name = "my-acai-function"
   role          = aws_iam_role.lambda_role.arn
   handler       = "index.handler"
-  runtime       = "python3.12"
-  architectures = ["arm64"]
+  runtime       = "python3.14"
+  architectures = ["x86_64"]
 
   layers = [module.acai_powertools_layer.layer_arn]
 }
@@ -225,8 +225,8 @@ module "acai_logging_layer" {
 
   layer_settings = {
     layer_name               = "acai-logging"
-    compatible_runtimes      = ["python3.12"]
-    compatible_architectures = ["arm64"]
+    compatible_runtimes      = ["python3.14"]
+    compatible_architectures = ["x86_64"]
     acai_modules             = ["logging"]
   }
 }
@@ -236,8 +236,8 @@ module "acai_ai_layer" {
 
   layer_settings = {
     layer_name               = "acai-ai"
-    compatible_runtimes      = ["python3.12"]
-    compatible_architectures = ["arm64"]
+    compatible_runtimes      = ["python3.14"]
+    compatible_architectures = ["x86_64"]
     acai_modules             = ["ai_llm", "ai_embedding"]
   }
 }
@@ -261,8 +261,8 @@ Object containing Lambda layer configuration:
 layer_settings = {
   layer_name               = string           # Name of the Lambda layer
   description              = string           # (Optional) Layer description
-  compatible_runtimes      = list(string)     # e.g., ["python3.12"]
-  compatible_architectures = list(string)     # e.g., ["arm64", "x86_64"]
+  compatible_runtimes      = list(string)     # e.g., ["python3.14"]
+  compatible_architectures = list(string)     # e.g., ["x86_64", "x86_64"]
   acai_modules             = list(string)     # Modules to include (see Available Modules table)
   pip_requirements         = list(string)     # (Optional) pip requirement spec lines (e.g. "requests==2.32.3")
   inline_files             = map(string)      # (Optional) "relative/path" => file content
@@ -273,8 +273,8 @@ layer_settings = {
 **Validation:**
 - `layer_name`: Required, max 64 characters
 - `description`: Optional, recommended for clarity
-- `compatible_runtimes`: Required, must be valid Python runtimes (e.g., "python3.12")
-- `compatible_architectures`: Required, e.g., "arm64" or "x86_64"
+- `compatible_runtimes`: Required, must be valid Python runtimes (e.g., "python3.14")
+- `compatible_architectures`: Required, e.g., "x86_64" or "x86_64"
 - `acai_modules`: Optional, defaults to `["aws_helper", "logging", "python_helper", "storage"]`
   - Only known module names allowed
   - Dependencies are automatically resolved and included

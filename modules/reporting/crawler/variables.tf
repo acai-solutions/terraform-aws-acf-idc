@@ -38,8 +38,8 @@ variable "settings" {
 variable "lambda_settings" {
   description = "HCL map of the Lambda-Settings."
   type = object({
-    architecture          = optional(string, "arm64")
-    runtime               = optional(string, "python3.12")
+    architecture          = optional(string, "x86_64")
+    runtime               = optional(string, "python3.14")
     timeout               = optional(number, 720)    # Timeout for the function, in seconds
     memory_size           = optional(number, 512)    # Size of the memory, in MB
     log_retention_in_days = optional(number, 7)      # Retention period for log files, in days
@@ -48,8 +48,8 @@ variable "lambda_settings" {
   })
 
   default = {
-    runtime               = "python3.12"
-    architecture          = "arm64"
+    runtime               = "python3.14"
+    architecture          = "x86_64"
     log_level             = "INFO"
     log_retention_in_days = 7
     memory_size           = 512
@@ -58,8 +58,8 @@ variable "lambda_settings" {
   }
 
   validation {
-    condition     = var.lambda_settings.architecture == null ? true : contains(["x86_64", "arm64"], var.lambda_settings.architecture)
-    error_message = "Architecture must be one of: \"x86_64\", \"arm64\", or null."
+    condition     = var.lambda_settings.architecture == null ? true : contains(["x86_64", "x86_64"], var.lambda_settings.architecture)
+    error_message = "Architecture must be one of: \"x86_64\", \"x86_64\", or null."
   }
 
   validation {

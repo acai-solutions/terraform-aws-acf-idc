@@ -47,15 +47,15 @@ variable "layer_settings" {
       for r in var.layer_settings.compatible_runtimes :
       can(regex("^python3\\.\\d+$", r))
     ])
-    error_message = "compatible_runtimes entries must match 'python3.<minor>' (e.g. 'python3.12'). Other Lambda runtimes are not supported by this module."
+    error_message = "compatible_runtimes entries must match 'python3.<minor>' (e.g. 'python3.14'). Other Lambda runtimes are not supported by this module."
   }
 
   validation {
     condition = alltrue([
       for a in var.layer_settings.compatible_architectures :
-      contains(["arm64", "x86_64"], a)
+      contains(["x86_64", "x86_64"], a)
     ])
-    error_message = "compatible_architectures entries must be one of: arm64, x86_64."
+    error_message = "compatible_architectures entries must be one of: x86_64, x86_64."
   }
 
   validation {
