@@ -122,10 +122,19 @@ resource "aws_ssoadmin_permission_set_inline_policy" "idc_inline" {
   permission_set_arn = aws_ssoadmin_permission_set.idc_ps[each.key].arn
 }
 
+locals {
+  # Filtering nulls out here first: Terraform's && is not short-circuiting, so a
+  # combined null check and attribute access in one `if` fails on null entries.
+  boundary_policies = {
+    for set in var.permission_sets : set.name => set.boundary_policy
+    if set.boundary_policy != null
+  }
+}
+
 resource "aws_ssoadmin_permissions_boundary_attachment" "idc_boundary_aws_managed" {
   for_each = {
-    for set in var.permission_sets : set.name => set.boundary_policy
-    if set.boundary_policy != null && lower(set.boundary_policy.managed_by) == "aws"
+    for name, boundary in local.boundary_policies : name => boundary
+    if lower(boundary.managed_by) == "aws"
   }
 
   instance_arn       = local.identity_store_arn
@@ -137,8 +146,8 @@ resource "aws_ssoadmin_permissions_boundary_attachment" "idc_boundary_aws_manage
 
 resource "aws_ssoadmin_permissions_boundary_attachment" "idc_boundary_customer_managed" {
   for_each = {
-    for set in var.permission_sets : set.name => set.boundary_policy
-    if set.boundary_policy != null && lower(set.boundary_policy.managed_by) == "customer"
+    for name, boundary in local.boundary_policies : name => boundary
+    if lower(boundary.managed_by) == "customer"
   }
 
   instance_arn       = local.identity_store_arn
