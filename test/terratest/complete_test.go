@@ -30,6 +30,9 @@ func TestIdC(t *testing.T) {
 	testSuccess2Output := terraform.Output(t, terraformIdC, "test_success_2")
 	assert.Equal(t, "true", testSuccess2Output, "The test_success_2 output is not true")
 
+	testSuccess3Output := terraform.Output(t, terraformIdC, "test_success_3")
+	assert.Equal(t, "true", testSuccess3Output, "The test_success_3 output is not true")
+
 	idcReportResult := terraform.OutputMap(t, terraformIdC, "idc_report")
 	statusCode := idcReportResult["statusCode"]
 	assert.Equal(t, "200", statusCode, "Expected statusCode to be 200")

@@ -22,11 +22,12 @@ variable "permission_sets" {
       policy_path = optional(string, "/")
     })), [])
     inline_policy_json = optional(string, "")
-    boundary_policies = optional(list(object({
+    # AWS allows at most one permissions boundary per permission set.
+    boundary_policy = optional(object({
       managed_by  = string
       policy_name = string
       policy_path = optional(string, "/")
-    })), [])
+    }), null)
   }))
   default = []
 
@@ -56,11 +57,6 @@ variable "permission_sets" {
   }
 
   validation {
-    condition     = alltrue([for ps in var.permission_sets : alltrue([for mp in ps.managed_policies : length(mp.policy_name) > 0])])
-    error_message = "Each boundary policy must have a non-empty policy_name.\n"
-  }
-
-  validation {
     condition     = alltrue([for ps in var.permission_sets : alltrue([for mp in ps.managed_policies : can(regex("^\\/(.*\\/)?$", mp.policy_path))])])
     error_message = "Each managed policy's policy_path must start and end with '/'.\n"
   }
@@ -71,18 +67,18 @@ variable "permission_sets" {
   }
 
   validation {
-    condition     = alltrue([for ps in var.permission_sets : alltrue([for bp in ps.boundary_policies : (substr(bp.managed_by, 0, 3) == "aws" || substr(bp.managed_by, 0, 8) == "customer")])])
-    error_message = "Each managed policy's managed_by field must start with 'aws' or 'customer'.\n"
+    condition     = alltrue([for ps in var.permission_sets : ps.boundary_policy == null ? true : (substr(ps.boundary_policy.managed_by, 0, 3) == "aws" || substr(ps.boundary_policy.managed_by, 0, 8) == "customer")])
+    error_message = "Each boundary policy's managed_by field must start with 'aws' or 'customer'.\n"
   }
 
   validation {
-    condition     = alltrue([for ps in var.permission_sets : alltrue([for bp in ps.boundary_policies : length(bp.policy_name) > 0])])
+    condition     = alltrue([for ps in var.permission_sets : ps.boundary_policy == null ? true : length(ps.boundary_policy.policy_name) > 0])
     error_message = "Each boundary policy must have a non-empty policy_name.\n"
   }
 
   validation {
-    condition     = alltrue([for ps in var.permission_sets : alltrue([for bp in ps.boundary_policies : can(regex("^\\/(.*\\/)?$", bp.policy_path))])])
-    error_message = "Each managed policy's policy_path must start and end with '/'.\n"
+    condition     = alltrue([for ps in var.permission_sets : ps.boundary_policy == null ? true : can(regex("^\\/(.*\\/)?$", ps.boundary_policy.policy_path))])
+    error_message = "Each boundary policy's policy_path must start and end with '/'.\n"
   }
 }
 
