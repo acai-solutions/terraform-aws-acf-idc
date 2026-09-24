@@ -14,7 +14,7 @@ jobs:
     uses: acai-solutions/github-workflows/.github/workflows/checks-py-hcl-module.yml@main
     if: ${{ github.event_name == 'pull_request' || endsWith(github.ref_name, '_ai') }}
     with:
-      py_version: "3.12"
+      py_version: "3.14"
       py_source_path: "."
       py_lint_include: true
       py_lint_allow_failures: false

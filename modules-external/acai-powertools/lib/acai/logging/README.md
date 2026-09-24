@@ -300,5 +300,5 @@ logger.info("works with any adapter")
 
 | Package | Required for | Required? |
 |---------|-------------|-----------|
-| Python ≥ 3.12 | `X \| None` union syntax | Yes |
+| Python ≥ 3.14 | `X \| None` union syntax | Yes |
 | `aws-lambda-powertools` | `CloudWatchLogger` adapter | Only for Lambda |

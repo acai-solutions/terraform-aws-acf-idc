@@ -64,8 +64,8 @@ variable "lambda_settings" {
   }
   # validation of var.lambda_settings.config
   validation {
-    condition     = contains(["x86_64", "arm64"], var.lambda_settings.config.architecture)
-    error_message = "Invalid architecture value. Must be either 'x86_64' or 'arm64'."
+    condition     = contains(["x86_64", "x86_64"], var.lambda_settings.config.architecture)
+    error_message = "Invalid architecture value. Must be either 'x86_64' or 'x86_64'."
   }
 
   validation {

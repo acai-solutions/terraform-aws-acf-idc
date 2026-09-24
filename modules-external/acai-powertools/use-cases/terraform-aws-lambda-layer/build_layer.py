@@ -448,7 +448,7 @@ def _create_parser() -> argparse.ArgumentParser:
         "--pip-python-version",
         type=str,
         default=None,
-        help="Target Python version for pip install (e.g., 312 for Python 3.12).",
+        help="Target Python version for pip install (e.g., 312 for Python 3.14).",
     )
     parser.add_argument(
         "--no-acai",
