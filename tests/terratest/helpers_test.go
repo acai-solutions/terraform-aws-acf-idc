@@ -47,11 +47,12 @@ func outputClean(t *testing.T, options *terraform.Options, key string) string {
 		stdout = stdout[:idx]
 	}
 	stdout = strings.TrimSpace(stdout)
-	var value string
+	// Decode into interface{} so bool/number outputs (e.g. `true`) are accepted.
+	var value interface{}
 	if err := json.Unmarshal([]byte(stdout), &value); err != nil {
 		t.Fatalf("Failed to parse terraform output %q: %v\nRaw output: %s", key, err, stdout)
 	}
-	return value
+	return fmt.Sprint(value)
 }
 
 // outputMapClean runs "terraform output -json <key>" and strips trailing
@@ -67,9 +68,15 @@ func outputMapClean(t *testing.T, options *terraform.Options, key string) map[st
 		stdout = stdout[:idx]
 	}
 	stdout = strings.TrimSpace(stdout)
-	var value map[string]string
-	if err := json.Unmarshal([]byte(stdout), &value); err != nil {
+	// Values may be numbers (e.g. a Lambda statusCode) or nested objects, so
+	// decode generically and stringify each value.
+	var raw map[string]interface{}
+	if err := json.Unmarshal([]byte(stdout), &raw); err != nil {
 		t.Fatalf("Failed to parse terraform output map %q: %v\nRaw output: %s", key, err, stdout)
+	}
+	value := make(map[string]string, len(raw))
+	for k, v := range raw {
+		value[k] = fmt.Sprint(v)
 	}
 	return value
 }
