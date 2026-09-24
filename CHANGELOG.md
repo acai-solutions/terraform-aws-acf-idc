@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.1](https://github.com/acai-solutions/terraform-aws-acf-idc/compare/1.4.0...1.4.1) (2026-09-24)
+
+
+### Bug Fixes
+
+* migrate to Python 3.14, x386 ([#5](https://github.com/acai-solutions/terraform-aws-acf-idc/issues/5)) ([ae16567](https://github.com/acai-solutions/terraform-aws-acf-idc/commit/ae16567c3c6da75ec94fcb9a71f7fc82c7a1afb7))
+
 ## [1.4.0](https://github.com/acai-solutions/terraform-aws-acf-idc/compare/1.3.1...1.4.0) (2026-09-24)
 
 
