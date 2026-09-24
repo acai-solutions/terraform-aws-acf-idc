@@ -62,9 +62,7 @@ module "idc_libraries_layer" {
 # ¦ LAMBDA
 # ---------------------------------------------------------------------------------------------------------------------
 module "idc_report" {
-  #checkov:skip=CKV_TF_1
-  source  = "acai-consulting/lambda/aws"
-  version = "1.3.7"
+  source = "../../../modules-external/terraform-aws-lambda"
 
   lambda_settings = {
     function_name = local.settings.crawler.lambda_name
