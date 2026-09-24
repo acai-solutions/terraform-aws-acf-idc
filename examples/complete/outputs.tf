@@ -26,6 +26,13 @@ output "test_success_2" {
   value = module.aws_identity_center.permission_sets.Platform_AdminAccess.arn == module.aws_identity_center.user_assignments[var.account_ids.core_security][0].permission_set_arn
 }
 
+output "test_success_3" {
+  value = alltrue([
+    module.aws_identity_center.permission_set_boundaries["Platform_ViewOnly"] == "arn:${var.aws_partition}:iam::aws:policy/ReadOnlyAccess",
+    !contains(keys(module.aws_identity_center.permission_set_boundaries), "Platform_AdminAccess"),
+  ])
+}
+
 output "idc_report" {
   value = jsondecode(aws_lambda_invocation.idc_report.result)
 }

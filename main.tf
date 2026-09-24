@@ -125,23 +125,20 @@ resource "aws_ssoadmin_permission_set_inline_policy" "idc_inline" {
 resource "aws_ssoadmin_permissions_boundary_attachment" "idc_boundary_aws_managed" {
   for_each = {
     for set in var.permission_sets : set.name => set.boundary_policy
-    if lower(try(set.boundary_policy.managed_by, "")) == "aws"
+    if set.boundary_policy != null && lower(set.boundary_policy.managed_by) == "aws"
   }
 
   instance_arn       = local.identity_store_arn
   permission_set_arn = aws_ssoadmin_permission_set.idc_ps[each.key].arn
   permissions_boundary {
-    customer_managed_policy_reference {
-      name = each.value.policy_name
-      path = each.value.policy_path
-    }
+    managed_policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy${each.value.policy_path}${each.value.policy_name}"
   }
 }
 
 resource "aws_ssoadmin_permissions_boundary_attachment" "idc_boundary_customer_managed" {
   for_each = {
     for set in var.permission_sets : set.name => set.boundary_policy
-    if lower(try(set.boundary_policy.managed_by, "")) == "customer"
+    if set.boundary_policy != null && lower(set.boundary_policy.managed_by) == "customer"
   }
 
   instance_arn       = local.identity_store_arn

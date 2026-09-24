@@ -48,7 +48,7 @@ module "idc_libraries_layer" {
     description              = "Lambda layer for IDC Reporting Crawler — includes AWS Lambda Powertools and XlsxWriter"
     compatible_runtimes      = [var.lambda_settings.runtime]
     compatible_architectures = [var.lambda_settings.architecture]
-    acai_modules             = ["aws_helpers", "logging"]
+    acai_modules             = ["aws_helper", "logging"]
     pip_requirements = [
       "aws-lambda-powertools==2.43.1",
       "XlsxWriter==3.2.0"

@@ -26,6 +26,20 @@ output "permission_sets" {
   }
 }
 
+output "permission_set_boundaries" {
+  description = "Map of permission set name to the policy ARN attached as its permissions boundary."
+  value = merge(
+    {
+      for name, attachment in aws_ssoadmin_permissions_boundary_attachment.idc_boundary_aws_managed :
+      name => attachment.permissions_boundary[0].managed_policy_arn
+    },
+    {
+      for name, attachment in aws_ssoadmin_permissions_boundary_attachment.idc_boundary_customer_managed :
+      name => "${attachment.permissions_boundary[0].customer_managed_policy_reference[0].path}${attachment.permissions_boundary[0].customer_managed_policy_reference[0].name}"
+    }
+  )
+}
+
 output "user_assignments" {
   description = "Map of user assignments with Single Sign-On."
   value = {

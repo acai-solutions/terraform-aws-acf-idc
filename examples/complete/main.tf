@@ -106,6 +106,10 @@ locals {
           "policy_name" : "AWSSupportAccess"
         },
       ]
+      "boundary_policy" : {
+        "managed_by" : "aws"
+        "policy_name" : "ReadOnlyAccess"
+      }
       "inline_policy_json" : jsonencode({
         "Version" : "2012-10-17",
         "Statement" : [
@@ -164,7 +168,7 @@ module "aws_identity_center" {
 # ¦ AWS IAM IDENTITY CENTER REPORTING
 # ---------------------------------------------------------------------------------------------------------------------
 module "idc_crawler_role" {
-  source = "../../reporting/principal"
+  source = "../../modules/reporting/principal"
 
   settings = {
     security = {
@@ -187,7 +191,7 @@ module "idc_crawler_role" {
 }
 
 module "idc_report" {
-  source = "../../reporting/crawler"
+  source = "../../modules/reporting/crawler"
 
   settings = {
     security = {
