@@ -1,0 +1,7 @@
+# CKV_AWS_50 (Lambda X-Ray tracing) false-positives on
+# acai-consulting/terraform-aws-lambda: the module sets tracing_config via a
+# dynamic block, which Checkov cannot evaluate. Tracing is on — lambda_settings
+# defaults tracing_mode to "Active" and the module attaches AWSXrayWriteOnlyAccess.
+# Upstream already suppresses the tfsec equivalent (avd-aws-0066) on that resource.
+skip-check:
+  - CKV_AWS_50
