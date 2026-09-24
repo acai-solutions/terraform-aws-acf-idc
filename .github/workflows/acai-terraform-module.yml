@@ -11,8 +11,11 @@ on:
 
 jobs:
   tf_module_checks:
-    uses: acai-solutions/github-workflows/.github/workflows/checks-py-tf-module.yml@main
+    uses: acai-solutions/github-workflows/.github/workflows/checks-py-hcl-module.yml@main
     if: ${{ github.event_name == 'pull_request' }}
+    with:
+      # Terratest lives in test/, not the tests/ default of the check workflows.
+      hcl_terratest_path: "test/terratest"
     secrets: inherit
 
     
