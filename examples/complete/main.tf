@@ -4,32 +4,80 @@
 #
 # This file is part of ACAI ACF.
 # Visit https://www.acai.gmbh or https://docs.acai.gmbh for more information.
-# 
+#
 # For full license text, see LICENSE file in repository root.
 # For commercial licensing, contact: contact@acai.gmbh
 
 
 # ---------------------------------------------------------------------------------------------------------------------
-# ¦ REQUIREMENTS
+# ¦ VERSIONS
 # ---------------------------------------------------------------------------------------------------------------------
 terraform {
   required_version = ">= 1.3.10"
 
   required_providers {
     aws = {
-      source                = "hashicorp/aws"
-      version               = ">= 4.47"
-      configuration_aliases = []
+      source  = "hashicorp/aws"
+      version = ">= 5.30"
+    }
+    time = {
+      source  = "hashicorp/time"
+      version = ">= 0.9"
     }
   }
 }
 
-
 # ---------------------------------------------------------------------------------------------------------------------
 # ¦ DATA
 # ---------------------------------------------------------------------------------------------------------------------
-data "aws_region" "current" { provider = aws.org_mgmt }
 data "aws_caller_identity" "current" { provider = aws.org_mgmt }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# ¦ CREATE PROVISIONERS
+# ---------------------------------------------------------------------------------------------------------------------
+module "create_provisioner_idc" {
+  source = "../../cicd-principals/terraform/idc"
+
+  iam_role_settings = {
+    name = "idc_cicd_provisioner"
+    aws_trustee_arns = [
+      "arn:${var.aws_partition}:iam::${var.account_ids.org_mgmt}:root"
+    ]
+  }
+  providers = {
+    aws = aws.org_mgmt
+  }
+}
+
+module "create_provisioner_reporting" {
+  source = "../../cicd-principals/terraform/reporting"
+
+  iam_role_settings = {
+    name = "idc_reporting_cicd_provisioner"
+    aws_trustee_arns = [
+      "arn:${var.aws_partition}:iam::${var.account_ids.org_mgmt}:root"
+    ]
+  }
+  providers = {
+    aws = aws.core_security
+  }
+}
+
+provider "aws" {
+  region = var.aws_region
+  alias  = "idc"
+  assume_role {
+    role_arn = module.create_provisioner_idc.iam_role_arn
+  }
+}
+
+provider "aws" {
+  region = var.aws_region
+  alias  = "reporting"
+  assume_role {
+    role_arn = module.create_provisioner_reporting.iam_role_arn
+  }
+}
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ¦ LOCALS
@@ -62,6 +110,10 @@ locals {
           "policy_name" : "AWSSupportAccess"
         },
       ]
+      "boundary_policy" : {
+        "managed_by" : "aws"
+        "policy_name" : "ReadOnlyAccess"
+      }
       "inline_policy_json" : jsonencode({
         "Version" : "2012-10-17",
         "Statement" : [
@@ -82,20 +134,20 @@ locals {
 
   account_assignments = [
     {
-      account_id = "992382728088" # ACAI AWS Testbed Core Security Account
+      account_id = var.account_ids.core_security
       permissions = [
         {
           permission_set_name = "Platform_AdminAccess"
-          users               = ["contact@acai.gmbh"]
+          users               = [var.assignment_user_name]
         }
       ]
     },
     {
-      account_id = "590183833356" # ACAI AWS Testbed Core Logging Account
+      account_id = var.account_ids.core_logging
       permissions = [
         {
           permission_set_name = "Platform_ViewOnly"
-          users               = ["contact@acai.gmbh"]
+          users               = [var.assignment_user_name]
         }
       ]
     }
@@ -111,15 +163,16 @@ module "aws_identity_center" {
   permission_sets     = local.permission_sets
   account_assignments = local.account_assignments
   providers = {
-    aws = aws.org_mgmt
+    aws = aws.idc
   }
+  depends_on = [module.create_provisioner_idc]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ¦ AWS IAM IDENTITY CENTER REPORTING
 # ---------------------------------------------------------------------------------------------------------------------
 module "idc_crawler_role" {
-  source = "../../reporting/principal"
+  source = "../../modules/reporting/principal"
 
   settings = {
     security = {
@@ -127,14 +180,14 @@ module "idc_crawler_role" {
         identity_center = {
           crawled_account = {
             iam_role_name     = "reporting-idc-crawler-role"
-            iam_role_trustees = ["992382728088"] # Core Security Account ID
+            iam_role_trustees = [var.account_ids.core_security]
           }
         }
       }
     }
   }
   providers = {
-    aws = aws.org_mgmt
+    aws = aws.idc
   }
   depends_on = [
     module.aws_identity_center
@@ -142,7 +195,7 @@ module "idc_crawler_role" {
 }
 
 module "idc_report" {
-  source = "../../reporting/crawler"
+  source = "../../modules/reporting/crawler"
 
   settings = {
     security = {
@@ -162,10 +215,18 @@ module "idc_report" {
     runtime = "python3.10"
   }
   providers = {
-    aws = aws.core_security
+    aws = aws.reporting
   }
+  depends_on = [module.create_provisioner_reporting]
 }
 
+
+# The Lambda execution role is created in the same apply; IAM needs a few
+# seconds before Lambda can assume it ("cannot be assumed by Lambda").
+resource "time_sleep" "wait_for_idc_report_role" {
+  create_duration = "20s"
+  depends_on      = [module.idc_report]
+}
 
 resource "aws_lambda_invocation" "idc_report" {
   function_name = "report--identity-center"
@@ -175,8 +236,7 @@ resource "aws_lambda_invocation" "idc_report" {
 }
 JSON
   depends_on = [
-    module.idc_report
+    time_sleep.wait_for_idc_report_role
   ]
-  provider = aws.core_security
+  provider = aws.reporting
 }
-

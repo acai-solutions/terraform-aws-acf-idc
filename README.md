@@ -1,4 +1,4 @@
-# terraform-aws-acf-idc Terraform module
+# AWS Identity Center (SSO) - ACF Terraform Module
 
 <!-- LOGO -->
 <a href="https://acai.gmbh">    
@@ -9,7 +9,9 @@
 [![Maintained by acai.gmbh][acai-shield]][acai-url]
 [![documentation][acai-docs-shield]][acai-docs-url]  
 ![module-version-shield]
-![terraform-version-shield]  
+![terraform-tested-shield]
+![opentofu-tested-shield]  
+![aws-tested-shield]  
 ![trivy-shield]
 ![checkov-shield]
 
@@ -170,7 +172,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_account_assignments"></a> [account\_assignments](#input\_account\_assignments) | A list of account assignments. | <pre>list(object({<br/>    account_id = string,<br/>    permissions = list(object({<br/>      permission_set_name = string<br/>      users               = optional(list(string), [])<br/>      groups              = optional(list(string), [])<br/>    }))<br/>  }))</pre> | `[]` | no |
-| <a name="input_permission_sets"></a> [permission\_sets](#input\_permission\_sets) | A list of AWS Identity Center Permission Sets. | <pre>list(object({<br/>    name                      = string<br/>    description               = optional(string, "not provided")<br/>    session_duration_in_hours = optional(number, 4)<br/>    relay_state               = optional(string, null)<br/>    managed_policies = optional(list(object({<br/>      managed_by  = string<br/>      policy_name = string<br/>      policy_path = optional(string, "/")<br/>    })), [])<br/>    inline_policy_json = optional(string, "")<br/>    boundary_policies = optional(list(object({<br/>      managed_by  = string<br/>      policy_name = string<br/>      policy_path = optional(string, "/")<br/>    })), [])<br/>  }))</pre> | `[]` | no |
+| <a name="input_permission_sets"></a> [permission\_sets](#input\_permission\_sets) | A list of AWS Identity Center Permission Sets. | <pre>list(object({<br/>    name                      = string<br/>    description               = optional(string, "not provided")<br/>    session_duration_in_hours = optional(number, 4)<br/>    relay_state               = optional(string, null)<br/>    managed_policies = optional(list(object({<br/>      managed_by  = string<br/>      policy_name = string<br/>      policy_path = optional(string, "/")<br/>    })), [])<br/>    inline_policy_json = optional(string, "")<br/>    boundary_policy = optional(object({<br/>      managed_by  = string<br/>      policy_name = string<br/>      policy_path = optional(string, "/")<br/>    }), null)<br/>  }))</pre> | `[]` | no |
 | <a name="input_resource_tags"></a> [resource\_tags](#input\_resource\_tags) | A map of tags to assign to the resources in this module. | `map(string)` | `{}` | no |
 
 ## Outputs
@@ -180,6 +182,7 @@ No modules.
 | <a name="output_group_assignments"></a> [group\_assignments](#output\_group\_assignments) | Map of group assignments with Single Sign-On. |
 | <a name="output_identity_store_arn"></a> [identity\_store\_arn](#output\_identity\_store\_arn) | The Amazon Resource Name (ARN) of the SSO Instance. |
 | <a name="output_identity_store_id"></a> [identity\_store\_id](#output\_identity\_store\_id) | Identity Store ID associated with the Single Sign-On Instance. |
+| <a name="output_permission_set_boundaries"></a> [permission\_set\_boundaries](#output\_permission\_set\_boundaries) | Map of permission set name to the policy ARN attached as its permissions boundary. |
 | <a name="output_permission_sets"></a> [permission\_sets](#output\_permission\_sets) | Map of permission sets configured to be used with Single Sign-On. |
 | <a name="output_user_assignments"></a> [user\_assignments](#output\_user\_assignments) | Map of user assignments with Single Sign-On. |
 <!-- END_TF_DOCS -->
@@ -197,7 +200,7 @@ See [LICENSE][license-url] for full details.
 <!-- COPYRIGHT -->
 <br />
 <br />
-<p align="center">Copyright &copy; 2024, 2025 ACAI GmbH</p>
+<p align="center">Copyright ACAI GmbH</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
 [acai-shield]: https://img.shields.io/badge/maintained_by-acai.gmbh-CB224B?style=flat
@@ -206,7 +209,9 @@ See [LICENSE][license-url] for full details.
 [acai-docs-url]: https://docs.acai.gmbh/solution-acf/10_overview/
 [module-version-shield]: https://img.shields.io/badge/module_version-1.3.1-CB224B?style=flat
 [module-release-url]: https://github.com/acai-solutions/terraform-aws-acf-idc/releases
-[terraform-version-shield]: https://img.shields.io/badge/tf-%3E%3D1.3.10-blue.svg?style=flat&color=blueviolet
+[terraform-tested-shield]: https://img.shields.io/badge/terraform-%3E%3D1.5.7_tested-844FBA?style=flat&logo=terraform&logoColor=white
+[opentofu-tested-shield]: https://img.shields.io/badge/opentofu-%3E%3D1.6_tested-FFDA18?style=flat&logo=opentofu&logoColor=black
+[aws-tested-shield]: https://img.shields.io/badge/AWS-%E2%9C%93_tested-FF9900?style=flat&logo=amazonaws&logoColor=white
 [trivy-shield]: https://img.shields.io/badge/trivy-passed-green
 [checkov-shield]: https://img.shields.io/badge/checkov-passed-green
 [license-url]: https://github.com/acai-solutions/terraform-aws-acf-idc/tree/main/LICENSE.md

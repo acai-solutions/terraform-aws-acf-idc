@@ -28,6 +28,7 @@ terraform {
 # ¦ IDC INSTANCE
 # ---------------------------------------------------------------------------------------------------------------------
 data "aws_ssoadmin_instances" "idc_instance" {}
+data "aws_partition" "current" {}
 
 locals {
   resource_tags = merge(
@@ -92,7 +93,7 @@ resource "aws_ssoadmin_managed_policy_attachment" "idc_ps_aws_managed" {
   }
 
   instance_arn       = local.identity_store_arn
-  managed_policy_arn = "arn:aws:iam::aws:policy${each.value.policy_path}${each.value.policy_name}"
+  managed_policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy${each.value.policy_path}${each.value.policy_name}"
   permission_set_arn = aws_ssoadmin_permission_set.idc_ps[each.value.permission_set].arn
 }
 
@@ -121,26 +122,32 @@ resource "aws_ssoadmin_permission_set_inline_policy" "idc_inline" {
   permission_set_arn = aws_ssoadmin_permission_set.idc_ps[each.key].arn
 }
 
+locals {
+  # Filtering nulls out here first: Terraform's && is not short-circuiting, so a
+  # combined null check and attribute access in one `if` fails on null entries.
+  boundary_policies = {
+    for set in var.permission_sets : set.name => set.boundary_policy
+    if set.boundary_policy != null
+  }
+}
+
 resource "aws_ssoadmin_permissions_boundary_attachment" "idc_boundary_aws_managed" {
   for_each = {
-    for set in var.permission_sets : set.name => set.boundary_policy
-    if lower(try(set.boundary_policy.managed_by, "")) == "aws"
+    for name, boundary in local.boundary_policies : name => boundary
+    if lower(boundary.managed_by) == "aws"
   }
 
   instance_arn       = local.identity_store_arn
   permission_set_arn = aws_ssoadmin_permission_set.idc_ps[each.key].arn
   permissions_boundary {
-    customer_managed_policy_reference {
-      name = each.value.policy_name
-      path = each.value.policy_path
-    }
+    managed_policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy${each.value.policy_path}${each.value.policy_name}"
   }
 }
 
 resource "aws_ssoadmin_permissions_boundary_attachment" "idc_boundary_customer_managed" {
   for_each = {
-    for set in var.permission_sets : set.name => set.boundary_policy
-    if lower(try(set.boundary_policy.managed_by, "")) == "customer"
+    for name, boundary in local.boundary_policies : name => boundary
+    if lower(boundary.managed_by) == "customer"
   }
 
   instance_arn       = local.identity_store_arn
@@ -211,6 +218,17 @@ resource "aws_ssoadmin_account_assignment" "idc_users" {
 
   target_id   = each.value.account_id
   target_type = "AWS_ACCOUNT"
+
+  # Assignments must be created after, and destroyed before, the permission set
+  # content. Every attachment change re-provisions the permission set to its
+  # assigned accounts; destroying both in parallel races and fails with a 404.
+  depends_on = [
+    aws_ssoadmin_managed_policy_attachment.idc_ps_aws_managed,
+    aws_ssoadmin_customer_managed_policy_attachment.idc_ps_customer_managed,
+    aws_ssoadmin_permission_set_inline_policy.idc_inline,
+    aws_ssoadmin_permissions_boundary_attachment.idc_boundary_aws_managed,
+    aws_ssoadmin_permissions_boundary_attachment.idc_boundary_customer_managed,
+  ]
 
   lifecycle {
     # Permission_set must exist in var.permission_sets
@@ -283,6 +301,17 @@ resource "aws_ssoadmin_account_assignment" "idc_groups" {
 
   target_id   = each.value.account_id
   target_type = "AWS_ACCOUNT"
+
+  # Assignments must be created after, and destroyed before, the permission set
+  # content. Every attachment change re-provisions the permission set to its
+  # assigned accounts; destroying both in parallel races and fails with a 404.
+  depends_on = [
+    aws_ssoadmin_managed_policy_attachment.idc_ps_aws_managed,
+    aws_ssoadmin_customer_managed_policy_attachment.idc_ps_customer_managed,
+    aws_ssoadmin_permission_set_inline_policy.idc_inline,
+    aws_ssoadmin_permissions_boundary_attachment.idc_boundary_aws_managed,
+    aws_ssoadmin_permissions_boundary_attachment.idc_boundary_customer_managed,
+  ]
 
   lifecycle {
     # Permission_set must exist in var.permission_sets

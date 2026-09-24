@@ -70,3 +70,15 @@ $${resource_tags_block}
                 - iam:UpdateRole
                 - iam:UpdateRoleDescription
               Resource: "arn:aws:iam::*:role/aws-reserved/sso.amazonaws.com/*"
+            - Sid: AllowSsmParameterManagement
+              Effect: Allow
+              Action:
+                - ssm:PutParameter
+                - ssm:DeleteParameter
+                - ssm:GetParameter
+                - ssm:GetParameters
+                - ssm:DescribeParameters
+                - ssm:AddTagsToResource
+                - ssm:RemoveTagsFromResource
+                - ssm:ListTagsForResource
+              Resource: "*"
