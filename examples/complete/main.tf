@@ -20,6 +20,10 @@ terraform {
       source  = "hashicorp/aws"
       version = ">= 5.30"
     }
+    time = {
+      source  = "hashicorp/time"
+      version = ">= 0.9"
+    }
   }
 }
 
@@ -217,6 +221,13 @@ module "idc_report" {
 }
 
 
+# The Lambda execution role is created in the same apply; IAM needs a few
+# seconds before Lambda can assume it ("cannot be assumed by Lambda").
+resource "time_sleep" "wait_for_idc_report_role" {
+  create_duration = "20s"
+  depends_on      = [module.idc_report]
+}
+
 resource "aws_lambda_invocation" "idc_report" {
   function_name = "report--identity-center"
 
@@ -225,7 +236,7 @@ resource "aws_lambda_invocation" "idc_report" {
 }
 JSON
   depends_on = [
-    module.idc_report
+    time_sleep.wait_for_idc_report_role
   ]
   provider = aws.reporting
 }
