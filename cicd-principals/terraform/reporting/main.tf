@@ -112,4 +112,18 @@ data "aws_iam_policy_document" "reporting" {
       "arn:${data.aws_partition.current.partition}:s3:::*",
     ]
   }
+  statement {
+    sid    = "ModuleVersionParameter"
+    effect = "Allow"
+    actions = [
+      "ssm:AddTagsToResource",
+      "ssm:DeleteParameter",
+      "ssm:GetParameter",
+      "ssm:GetParameters",
+      "ssm:ListTagsForResource",
+      "ssm:PutParameter",
+      "ssm:RemoveTagsFromResource",
+    ]
+    resources = ["arn:${data.aws_partition.current.partition}:ssm:*:*:parameter/acai/*"]
+  }
 }
