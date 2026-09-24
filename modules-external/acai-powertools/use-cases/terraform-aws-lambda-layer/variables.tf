@@ -102,6 +102,12 @@ variable "regions" {
 # ---------------------------------------------------------------------------------------------------------------------
 # ¦ COMMON
 # ---------------------------------------------------------------------------------------------------------------------
+variable "create_product_version_ssm_parameter" {
+  description = "Whether to create the SSM parameter for the product version. Set to false when multiple instances of this module share the same ssm_parameter_prefix to avoid TooManyUpdates errors."
+  type        = bool
+  default     = true
+}
+
 variable "ssm_parameter_prefix" {
   description = "Optional prefix for SSM parameter holding the module version."
   type        = string

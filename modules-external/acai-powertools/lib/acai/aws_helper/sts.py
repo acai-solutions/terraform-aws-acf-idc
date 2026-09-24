@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import socket
 import time
-import traceback
 from typing import Any
 
 import boto3
@@ -50,7 +49,7 @@ class StsClient:
         clients created from it inherit the region.
 
         Returns ``None`` on any failure; the full traceback is logged via
-        ``logger.error`` for diagnosis.
+        ``logger.exception`` for diagnosis.
         """
         try:
             client_kwargs: dict[str, Any] = {"config": config or self._config}
@@ -87,10 +86,8 @@ class StsClient:
             self.logger.debug(f"Assumed role {role_arn}")
             return session
 
-        except Exception as e:
-            self.logger.error(
-                f"Was not able to assume role {role_arn}: {e}\n{traceback.format_exc()}"
-            )
+        except Exception:
+            self.logger.exception(f"Was not able to assume role {role_arn}")
             return None
 
 

@@ -29,9 +29,17 @@ locals {
     }
   )
   aws_ssm_parameter_prefix = var.ssm_parameter_prefix == "" ? "" : "/${lower(var.ssm_parameter_prefix)}"
-  solution_version         = "1.0.8"
+  solution_version         = "1.0.10"
 }
 resource "aws_ssm_parameter" "product_version" {
+  # The parameter name is global per ssm_parameter_prefix. When this module
+  # is instantiated more than once in the same workspace (e.g. a standalone
+  # layer plus an account-cache layer in PROVISIO), concurrent PutParameter
+  # calls on the same name surface as `TooManyUpdates`. Consumers with
+  # multiple instances must disable the parameter on all but one instance
+  # via `create_product_version_ssm_parameter = false`.
+  count = var.create_product_version_ssm_parameter ? 1 : 0
+
   #checkov:skip=CKV2_AWS_34: AWS SSM Parameter should be Encrypted not required for module version
   # Note: this parameter is created in the provider's default region only,
   # even when var.regions is used to publish the layer in multiple regions.
@@ -122,12 +130,14 @@ locals {
 # ¦ BUILD LAYER SOURCE + ZIP
 # ---------------------------------------------------------------------------------------------------------------------
 resource "null_resource" "build_layer" {
-  # Rebuild when inputs change OR when the zip is missing on the current agent.
-  # The zip path uses abspath(path.root) so it resolves identically in both
-  # the provisioner (working_dir = path.module) and the resource's filename.
+  # Rebuild only when the input set changes. A `fileexists ? "yes" : timestamp()`
+  # trigger here would force replacement on every plan in ephemeral CICD agents
+  # (the zip from a previous apply is gone), cascading into spurious diffs on
+  # the layer version, lambda function, IAM policies and SQS policy. The layer
+  # version uses `source_code_hash = local.layer_inputs_hash`, so Terraform
+  # never needs to read the zip from disk when inputs are unchanged.
   triggers = {
     inputs_hash = local.layer_inputs_hash
-    zip_present = fileexists(local.acai_powertools_layer_zip) ? "yes" : timestamp()
   }
 
   provisioner "local-exec" {
