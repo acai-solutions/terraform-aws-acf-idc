@@ -83,7 +83,7 @@ locals {
 
   # Derive pip target platform from compatible_architectures
   arch_platform_map = {
-    "x86_64"  = "manylinux2014_aarch64"
+    "x86_64" = "manylinux2014_aarch64"
     "x86_64" = "manylinux2014_x86_64"
   }
   pip_platform          = try(local.arch_platform_map[var.layer_settings.compatible_architectures[0]], null)
